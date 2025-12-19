@@ -11,17 +11,12 @@ class MovieController {
   }
 
   async getAllMovies (req, res) {
-    const movies = await this.model.getAllMovies()
-    await Promise.all(movies.map(async (movie) => {
-      movie.genres = await this.model.getGenresByMovieId(movie.id)
-    }))
-    res.json(movies)
+    res.json(await this.model.getAllMovies())
   }
 
   async getMovieById (req, res) {
     const movie = await this.model.getMovieById(req.params.id)
     if (movie) {
-      movie.genres = await this.model.getGenresByMovieId(movie.id)
       res.json(movie)
     } else {
       res.status(404).json({ message: 'Movie not found' })
@@ -40,9 +35,7 @@ class MovieController {
       rate: req.body.rate
     }
     await this.model.createMovie(newMovie)
-    const movie = await this.model.getMovieById(newMovie.id)
-    movie.genres = await this.model.getGenresByMovieId(movie.id)
-    res.status(201).json(movie)
+    res.status(201).json(await this.model.getMovieById(newMovie.id))
   }
 
   async updateMovie (req, res) {
@@ -56,9 +49,7 @@ class MovieController {
       rate: req.body.rate
     }
     await this.model.updateMovie(req.params.id, updatedMovie)
-    const movie = await this.model.getMovieById(req.params.id)
-    movie.genres = await this.model.getGenresByMovieId(movie.id)
-    res.json(movie)
+    res.json(await this.model.getMovieById(req.params.id))
   }
 
   async deleteMovie (req, res) {

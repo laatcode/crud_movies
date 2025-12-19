@@ -9,6 +9,11 @@ class MoviesFile {
     return moviesData.find(movie => movie.id === id)
   }
 
+  getGenresByMovieId (id) {
+    const movie = moviesData.find(movie => movie.id === id)
+    return movie ? movie.genre : []
+  }
+
   createMovie (movie) {
     moviesData.push(movie)
   }

@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start_with_mysql:dev": "node --watch --env-file=.env src/startWithMySQL.js",
+    "start_with_file:dev": "node --watch --env-file=.env src/startWithFile.js",
     "start_with_mysql": "node src/startWithMySQL.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

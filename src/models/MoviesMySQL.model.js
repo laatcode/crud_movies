@@ -14,14 +14,27 @@ class MoviesMySQL {
     })
   }
 
-  async getAllMovies () {
-    const [result] = await this.pool.query('SELECT BIN_TO_UUID(id) AS id, title, year, director, duration, poster FROM movies')
-    return result
+  getAllMovies () {
+    return this.pool.query('SELECT BIN_TO_UUID(id) AS id, title, year, director, duration, poster FROM movies')
+      .then(async ([movies]) =>
+        await Promise.all(movies.map(async movie => {
+          movie.genre = await this.getGenresByMovieId(movie.id)
+          return movie
+        }))
+      )
   }
 
-  async getMovieById (id) {
-    const [result] = await this.pool.query('SELECT BIN_TO_UUID(id) AS id, title, year, director, duration, poster, rate FROM movies WHERE id = UUID_TO_BIN(?)', [id])
-    return result[0]
+  getMovieById (id) {
+    return this.pool.query('SELECT BIN_TO_UUID(id) AS id, title, year, director, duration, poster, rate FROM movies WHERE id = UUID_TO_BIN(?)', [id])
+      .then(async ([movie]) => {
+        movie = movie[0]
+        if (movie) {
+          movie.genre = await this.getGenresByMovieId(movie?.id)
+          return movie
+        } else {
+          return null
+        }
+      })
   }
 
   async getGenresByMovieId (id) {
@@ -48,7 +61,11 @@ class MoviesMySQL {
       }
     } catch (error) {
       if (error.code === 'ER_NO_REFERENCED_ROW_2') {
-        throw new DBError(`Genre with id ${genreId} or movie with id ${movieId} does not exist`)
+        if (connection) {
+          throw new DBError(`Genre with id ${genreId} does not exist`)
+        } else {
+          throw new DBError(`Genre with id ${genreId} or movie with id ${movieId} does not exist`)
+        }
       }
       if (error.code === 'ER_DUP_ENTRY') {
         throw new DBError(`Genre with id ${genreId} is already associated with movie ${movieId}`)
